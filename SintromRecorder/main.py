@@ -43,7 +43,122 @@ class AddRecordDialog(QDialog):
                 "TP": self.tp.value(),
                 "INR": self.inr.value()
         }
-        if self.dosage.currentText()=='Other':
+           
+        if self.dosage.currentText()=='1/2 everyday':
+            ret.update({
+            "LastSaturday": .5,
+            "Sunday": .5,
+            "Monday": .5,
+            "Tuesday": .5,
+            "Wednesday": .5,
+            "Thursday": .5,
+            "Friday": .5,
+            "Saturday": .5
+            })
+        elif self.dosage.currentText()=='1/4 everyday':
+            ret.update({
+            "LastSaturday": .25,
+            "Sunday": .25,
+            "Monday": .25,
+            "Tuesday": .25,
+            "Wednesday": .25,
+            "Thursday": .25,
+            "Friday": .25,
+            "Saturday": .25
+            })
+        elif self.dosage.currentText()=='1/4 every other day': 
+            week = ['LastSaturday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+            doses = [0.0]*len(week)
+            vals = [.25, 0]
+            j = 0
+            index_day = week.index(datetime.date(self.date.date().year(), self.date.date().month(), self.date.date().day()).strftime("%A"))
+            for i in range(len(week)):
+                doses[(i + index_day) % len(week)] = vals[j]
+                j = (j + 1) % len(vals)
+            
+            weekDict = {week[i] : doses[i] for i in range(len(week))}
+            ret.update(weekDict) 
+        elif self.dosage.currentText()=='One day 1/4, one day 1/2':
+            week = ['LastSaturday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+            doses = [0.0]*len(week)
+            vals = [.25, 0.5]
+            j = 0
+            index_day = week.index(datetime.date(self.date.date().year(), self.date.date().month(), self.date.date().day()).strftime("%A"))
+            for i in range(len(week)):
+                doses[(i + index_day) % len(week)] = vals[j]
+                j = (j + 1) % len(vals)
+            
+            weekDict = {week[i] : doses[i] for i in range(len(week))}
+            ret.update(weekDict)
+        elif self.dosage.currentText()=='1/2 everyday, except Monday and thursday 1/4':
+            ret.update({
+            "LastSaturday": .5,
+            "Sunday": .5,
+            "Monday": .25,
+            "Tuesday": .5,
+            "Wednesday": .5,
+            "Thursday": .25,
+            "Friday": .5,
+            "Saturday": .5
+            })
+        elif self.dosage.currentText()=='1/4 everyday, except Monday and thursday 0':
+            ret.update({
+            "LastSaturday": .25,
+            "Sunday": .25,
+            "Monday": 0.0,
+            "Tuesday": .25,
+            "Wednesday": .25,
+            "Thursday": 0.0,
+            "Friday": .25,
+            "Saturday": .25
+            })
+        elif self.dosage.currentText()=='1/4 everyday, except Monday and thursday 1/2':
+            ret.update({
+            "LastSaturday": .25,
+            "Sunday": .25,
+            "Monday": 0.5,
+            "Tuesday": .25,
+            "Wednesday": .25,
+            "Thursday": 0.5,
+            "Friday": .25,
+            "Saturday": .25
+            })
+        elif self.dosage.currentText()=='1/2 everyday, except Monday and thursday 3/4':
+            ret.update({
+            "LastSaturday": .5,
+            "Sunday": .5,
+            "Monday": 0.75,
+            "Tuesday": .5,
+            "Wednesday": .5,
+            "Thursday": 0.75,
+            "Friday": .5,
+            "Saturday": .5
+            })
+        elif self.dosage.currentText()=='Three days 1/4, Two days 0':# TODO Fix this
+            week = ['LastSaturday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+            doses = [0.0]*len(week)
+            vals = [.25,.25,.25, 0, 0]
+            j = 0
+            index_day = week.index(datetime.date(self.date.date().year(), self.date.date().month(), self.date.date().day()).strftime("%A"))
+            for i in range(len(week)):
+                doses[(i + index_day) % len(week)] = vals[j]
+                j = (j + 1) % len(vals)
+            
+            weekDict = {week[i] : doses[i] for i in range(len(week))}
+            ret.update(weekDict)
+        elif self.dosage.currentText()=='Two days 1/2, one day 1/4':# TODO Fix this
+            week = ['LastSaturday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+            doses = [0.0]*len(week)
+            vals = [.5,.5,.25]
+            j = 0
+            index_day = week.index(datetime.date(self.date.date().year(), self.date.date().month(), self.date.date().day()).strftime("%A"))
+            for i in range(len(week)):
+                doses[(i + index_day) % len(week)] = vals[j]
+                j = (j + 1) % len(vals)
+            
+            weekDict = {week[i] : doses[i] for i in range(len(week))}
+            ret.update(weekDict)
+        else:
             ret.update({
                 "LastSaturday": self.frac_to_float(self.saturday.currentText()),
                 "Sunday": self.frac_to_float(self.sunday.currentText()),
@@ -54,75 +169,7 @@ class AddRecordDialog(QDialog):
                 "Friday": self.frac_to_float(self.friday.currentText()),
                 "Saturday": self.frac_to_float(self.saturday.currentText())
             })
-        else:
-            if self.dosage.currentText()=='1/2 everyday':
-                ret.update({
-                "LastSaturday": .5,
-                "Sunday": .5,
-                "Monday": .5,
-                "Tuesday": .5,
-                "Wednesday": .5,
-                "Thursday": .5,
-                "Friday": .5,
-                "Saturday": .5
-                })
-            elif self.dosage.currentText()=='1/4 everyday':
-                ret.update({
-                "LastSaturday": .25,
-                "Sunday": .25,
-                "Monday": .25,
-                "Tuesday": .25,
-                "Wednesday": .25,
-                "Thursday": .25,
-                "Friday": .25,
-                "Saturday": .25
-                })
-            elif self.dosage.currentText()=='1/4  every other day': 
-                week = ['LastSaturday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
-                doses = [0.0]*len(week)
-                vals = [.25, 0]
-                j = 0
-                index_day = week.index(datetime.date(self.date.date().year(), self.date.date().month(), self.date.date().day()).strftime("%A"))
-                for i in range(len(week)):
-                    doses[(i + index_day) % len(week)] = vals[j]
-                    j = (j + 1) % len(vals)
-                
-                weekDict = {week[i] : doses[i] for i in range(len(week))}
-                ret.update(weekDict) 
-            elif self.dosage.currentText()=='One day 1/4, one day 1/2':
-                week = ['LastSaturday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
-                doses = [0.0]*len(week)
-                vals = [.25, 0.5]
-                j = 0
-                index_day = week.index(datetime.date(self.date.date().year(), self.date.date().month(), self.date.date().day()).strftime("%A"))
-                for i in range(len(week)):
-                    doses[(i + index_day) % len(week)] = vals[j]
-                    j = (j + 1) % len(vals)
-                
-                weekDict = {week[i] : doses[i] for i in range(len(week))}
-                ret.update(weekDict)
-            elif self.dosage.currentText()=='1/2 everyday, except Monday and thursday 1/4':
-                ret.update({
-                "LastSaturday": .5,
-                "Sunday": .5,
-                "Monday": .25,
-                "Tuesday": .5,
-                "Wednesday": .5,
-                "Thursday": .25,
-                "Friday": .5,
-                "Saturday": .5
-                })
-            elif self.dosage.currentText()=='1/4 everyday, except Monday and thursday 0':
-                ret.update({
-                "LastSaturday": .25,
-                "Sunday": .25,
-                "Monday": 0.0,
-                "Tuesday": .25,
-                "Wednesday": .25,
-                "Thursday": 0.0,
-                "Friday": .25,
-                "Saturday": .25
-                })
+        
         ret.update({
             "Weekday": datetime.date(self.date.date().year(), self.date.date().month(), self.date.date().day()).strftime("%A")
         })
@@ -130,6 +177,19 @@ class AddRecordDialog(QDialog):
             "DiffrentToday": self.todayDIfferent.isChecked(),
             "DosageToday" : self.frac_to_float(self.today.currentText()) if self.todayDIfferent.isChecked() else ret[ret["Weekday"]]
         })
+        categories = ["1/2 everyday",# Done
+                        "1/4 everyday",# Done
+                        "1/4 every other day",# Done
+                        "One day 1/4, one day 1/2",# Done
+                        "1/2 everyday, except Monday and thursday 1/4",# Done
+                        "1/4 everyday, except Monday and thursday 1/2",# Done
+                        "1/4 everyday, except Monday and thursday 0",# Done
+                        "1/2 everyday, except Monday and thursday 3/4",# Done
+                        "Three days 1/4, Two days 0",#Sorte of done
+                        "Two days 1/2, one day 1/4",#Sorte of done
+                        "Other"]
+        ret.update({"Category" : categories.index(self.dosage.currentText())})
+        #print(ret)
         return ret
 
 

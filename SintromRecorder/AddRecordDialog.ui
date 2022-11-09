@@ -106,7 +106,7 @@
        </item>
        <item>
         <property name="text">
-         <string>1/4  every other day</string>
+         <string>1/4 every other day</string>
         </property>
        </item>
        <item>
@@ -121,7 +121,27 @@
        </item>
        <item>
         <property name="text">
+         <string>1/4 everyday, except Monday and thursday 1/2</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>1/4 everyday, except Monday and thursday 0</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>1/2 everyday, except Monday and thursday 3/4</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Three days 1/4, Two days 0</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Two days 1/2, one day 1/4</string>
         </property>
        </item>
        <item>

@@ -188,40 +188,35 @@ def fourth_try(train_X, train_Y,test_X, test_Y):
     print("result:\n",prediction, "\n----------------\n")
     print(pd.DataFrame(test_Y), "\n----------------\n")
     
-def fifth_try(train_X, train_Y,test_X, test_Y, epochs=200):
+def fifth_try(train_X, train_Y,test_X, test_Y, epochs=500):
 #Create ML Model
     normalizer = tf.keras.layers.Normalization(axis=-1)
     normalizer.adapt(train_X)
 
     model = tf.keras.models.Sequential([
     tf.keras.Input(shape=(train_X.shape[1])),
-    normalizer,
-    # tf.keras.layers.Dense(14, activation='relu'),
-    # tf.keras.layers.Dense(28, activation='relu'),
-    # tf.keras.layers.Dense(28*2, activation='relu'),
-    # tf.keras.layers.Dense(28*3, activation='relu'),
-    # tf.keras.layers.Dense(28*4, activation='relu'),tf.keras.layers.Dropout(0.2),
-    # tf.keras.layers.Dense(28*3, activation='relu'),
-    # tf.keras.layers.Dense(28*2, activation='relu'),
-    #tf.keras.layers.Dense(28, activation='relu'),
-    
-    tf.keras.layers.Dense(14, activation='relu'),
-    
-    # tf.keras.layers.Dense(32, activation='relu'),
-    # tf.keras.layers.Dense(64, activation='relu'),
-    # tf.keras.layers.Dense(128, activation='relu'),
-    # tf.keras.layers.Dense(64, activation='relu'),
-    # tf.keras.layers.Dense(32, activation='relu'),
-    tf.keras.layers.Dropout(0.2),
-    tf.keras.layers.Dense(8)    
+    tf.keras.layers.Dense(32, activation='relu'),
+    tf.keras.layers.Dropout(0.1),
+    tf.keras.layers.Dense(6),
+    tf.keras.layers.Activation(activation=tf.nn.softmax)
     ])
 
+    file_path = './checkpoints/checkpoint' + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    input(f'\nCheckpoit file : {file_path}\n')
+    model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+        filepath=file_path,
+        save_weights_only=True,
+        monitor='val_accuracy',
+        mode='max',
+        verbose=0,
+        save_best_only=True)
 
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
-              loss='mean_absolute_error',
-              metrics=['accuracy'],)
+
+    model.compile(tf.keras.optimizers.Adam(learning_rate=1e-3),#optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
     
-    history = model.fit(train_X, train_Y, validation_split = 0.2, epochs=epochs, batch_size=4)
+    history = model.fit(train_X, train_Y, validation_split = 0.2, epochs=epochs, batch_size=2, callbacks=[model_checkpoint_callback])
     
     fig, (ax1, ax2) = plt.subplots(1, 2)
     ax1.plot(history.history['accuracy'])
@@ -238,6 +233,7 @@ def fifth_try(train_X, train_Y,test_X, test_Y, epochs=200):
     ax2.set_xlabel('epoch')
     ax2.legend(['train', 'val'], loc='upper left')
 
+    fig.savefig(file_path+'.png')
     fig.show()
     '''
     pd.DataFrame(history.history).plot(figsize=(8,5))
@@ -248,8 +244,19 @@ def fifth_try(train_X, train_Y,test_X, test_Y, epochs=200):
 
     result = pd.DataFrame(model(np.array(test_X)))#, index=range(5), columns=[0,.25,.5,.75,1])#probability_model(np.array(test_X))
     
-    print("result:\n",result, "\n----------------\n")
-    print(pd.DataFrame(test_Y), "\n----------------\n")
+    categories = ["1/2 everyday",# Done
+                        "1/4 everyday",# Done
+                        "1/4 every other day",# Done
+                        "One day 1/4, one day 1/2",# Done
+                        #"1/2 everyday, except Monday and thursday 1/4",# Done
+                        #"1/4 everyday, except Monday and thursday 1/2",# Done
+                        #"1/4 everyday, except Monday and thursday 0",# Done
+                        #"1/2 everyday, except Monday and thursday 3/4",# Done
+                        "Three days 1/4, Two days 0",#Sorte of done
+                        "Two days 1/2, one day 1/4",#Sorte of done
+                        "Other"]
+    print("result:\n",[categories[e] for e in result.idxmax(axis=1)], "\n----------------\n")
+    print([categories[e] for e in test_Y.loc[:,'NewCategory']], "\n----------------\n")
 
 
 def mnist_ml():
@@ -296,37 +303,71 @@ if __name__ == '__main__':
          - datetime.datetime.strptime(data_df.loc[i,'Date'], '%Y-%m-%d').date()).days
         for i in range(data_df.shape[0] - 1)
     ]
+    '''
     durations.append((datetime.datetime.today().date()
          - datetime.datetime.strptime(data_df.loc[data_df.shape[0]-1,'Date'], '%Y-%m-%d').date()).days)
-    
-    data_df['Duration'] = durations
+    '''
+    data_df['Duration'] = durations +[0]
+    data_df.drop(data_df.tail(1).index,inplace=True)
 
-    train_df = data_df.drop(columns=['Date', 'LastSaturday', 'DiffrentToday', 'Weekday'])
+    #print(data_df, "\n----------------\n")
+
+    train_df = data_df.drop(columns=['Date', 'LastSaturday', 'DiffrentToday', 'Weekday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','DosageToday'])
     train_df['NewTP'] = [train_df.loc[i+1,'TP'] for i in range(train_df.shape[0]-1)] + [0]
     train_df['NewINR'] = [train_df.loc[i+1,'INR'] for i in range(train_df.shape[0]-1)] + [0]
+    train_df['NewCategory'] = [train_df.loc[i+1,'Category'] for i in range(train_df.shape[0]-1)] + [0]
     
-    print(train_df.info())
-    print(train_df.head())
+    train_df.drop(train_df.tail(1).index,inplace=True)
+    #print(train_df.info())
+    #print(train_df.head())
     
-    X = train_df.iloc[:train_df.shape[0]-1,:]
-    Y = train_df.loc[1:,['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','DosageToday']]
+    print(train_df, "\n----------------\n")
+    
+    X = train_df.iloc[:,[0,1,2,3,4,5,6]]
+    Y = train_df.loc[:,['NewCategory']]
     Y.reset_index(drop=True, inplace=True)
+    
+    print(X, "\n----------------\n")
+    print(Y, "\n----------------\n")
+    
+    X['Category'].replace(8,4,inplace=True)
+    X['Category'].replace(9,5,inplace=True)
+        
+    X['NewCategory'].replace(8,4,inplace=True)
+    X['NewCategory'].replace(9,5,inplace=True)
+        
+    Y['NewCategory'].replace(8,4,inplace=True)
+    Y['NewCategory'].replace(9,5,inplace=True)
+    
+    mean = X.mean()
+    std = X.std()
+    print(mean)
+    print(std)
+    X = X - mean
+    X = X / std
 
-    #print(X, "\n----------------\n")
-    #print(Y, "\n----------------\n")
-
-    seed = 200
+    '''
+    fig, ax = plt.subplots()
+    print(X.info())
+    print(Y.value_counts())
+    VP = ax.boxplot(X)
+    plt.xticks([i for i in range(1,len(X.columns)+1)], [e for e in X.columns])
+    plt.show()
+    
+    input()
+    '''
+    seed = 14982#200
     train_X = X.sample(frac=0.8,random_state=seed) #random state is a seed value
     test_X = X.drop(train_X.index)
 
-    #print(train_X, "\n----------------\n")
-    #print(test_X, "\n----------------\n")
+    print(train_X, "\n----------------\n")
+    print(test_X, "\n----------------\n")
 
     train_Y = Y.sample(frac=0.8,random_state=seed)
     test_Y = Y.drop(train_Y.index)
 
-    #print(train_Y, "\n----------------\n")
-    #print(test_Y, "\n----------------\n")
+    print(train_Y, "\n----------------\n")
+    print(test_Y, "\n----------------\n")
 
     #print(train_X.info())
     #print(train_Y.info())
@@ -334,8 +375,8 @@ if __name__ == '__main__':
     
     fifth_try(train_X, train_Y, test_X, test_Y)
     input()
-
-    '''
+    
+    ''' 
     train_Xs = {}
     test_Xs = {}
     train_Ys = {}
